@@ -56,3 +56,6 @@ app.listen(8081, () => console.log("app listening at cloud9 8081") );
 
 });
 
+/*
+    "start": "nodemon --watch src --exec babel-node -- src/index.js"
+*/
