@@ -163,3 +163,4 @@ const validateTokens = (keys, token) => {
         decrepteAndValidate(token, keys).then(result => console.log('result: ', result)).catch(err => console.error('result parsing error: ', err));
     }, err => console.error('error in creating keys from credentials: ', err));
 };
+//# sourceMappingURL=utils.js.map

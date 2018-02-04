@@ -86,3 +86,4 @@ poll.statics = {
 };
 
 export const Poll = mongoose.model('Poll', poll);
+//# sourceMappingURL=poll.js.map

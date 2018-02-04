@@ -56,3 +56,4 @@ user.statics = {
 };
 
 export const User = mongoose.model('User', user);
+//# sourceMappingURL=user.js.map

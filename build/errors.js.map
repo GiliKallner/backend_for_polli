@@ -1,0 +1,1 @@
+{"version":3,"sources":["../src/errors.js"],"names":["dataBaseErrors"],"mappings":"AAAA,MAAMA,iBAAiB,EAAvB","file":"errors.js","sourcesContent":["const dataBaseErrors = {\n    \n};"]}

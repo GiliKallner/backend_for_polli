@@ -54,3 +54,4 @@ db.once('open', () => {
 /*
     "start": "nodemon --watch src --exec babel-node -- src/index.js"
 */
+//# sourceMappingURL=index.js.map

@@ -26,3 +26,4 @@ module.exports = {
     jwtSecret: secret,
     SESSION_SECRET: secret
 };
+//# sourceMappingURL=config.js.map

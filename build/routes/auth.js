@@ -29,3 +29,4 @@ router.post('/', (req, res) => {
 });
 
 export default router;
+//# sourceMappingURL=auth.js.map
