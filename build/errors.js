@@ -1,2 +1,3 @@
-const dataBaseErrors = {};
-//# sourceMappingURL=errors.js.map
+"use strict";
+
+var dataBaseErrors = {};

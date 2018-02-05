@@ -1,12 +1,17 @@
-const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
+'use strict';
 
-export const PollOption = new Schema({
+Object.defineProperty(exports, "__esModule", {
+        value: true
+});
+var mongoose = require('mongoose');
+var Schema = mongoose.Schema;
+
+var PollOption = exports.PollOption = new Schema({
         option: { type: String, required: true },
         votes: { type: Number, default: 0 }
 });
 
-const poll = new Schema({
+var poll = new Schema({
         owner: { type: Schema.Types.ObjectId, ref: 'User' },
         createdAt: { type: Date, default: Date.now },
         question: { type: String, required: true },
@@ -17,18 +22,21 @@ poll.set('toJSON', { getters: true, virtual: true });
 
 poll.statics = {
 
-        getPollById: function (pollId, callback) {
+        getPollById: function getPollById(pollId, callback) {
                 this.findById(pollId).exec(callback);
         },
 
-        getUsersPolls: function (userId, callback) {
+        getUsersPolls: function getUsersPolls(userId, callback) {
                 this.find({ owner: userId }, 'question options createdAt').exec(callback);
         },
 
-        saveNewPoll: function (saveData, callback) {
-                const { question, options, user_id } = saveData;
+        saveNewPoll: function saveNewPoll(saveData, callback) {
+                var question = saveData.question,
+                    options = saveData.options,
+                    user_id = saveData.user_id;
 
-                this.create({ question: question, options: options, owner: user_id, createdAt: Date.now() }, (err, created) => {
+
+                this.create({ question: question, options: options, owner: user_id, createdAt: Date.now() }, function (err, created) {
                         if (err) {
                                 console.error('saving error: ', err);throw err;
                         }
@@ -36,10 +44,12 @@ poll.statics = {
                 });
         },
 
-        updatePoll: function (updatedData, poll_id, callback) {
-                let { question, options } = updatedData;
+        updatePoll: function updatePoll(updatedData, poll_id, callback) {
+                var question = updatedData.question,
+                    options = updatedData.options;
 
-                this.findById(poll_id, (err, poll) => {
+
+                this.findById(poll_id, function (err, poll) {
                         if (err) return callback(err, null);
 
                         if (question) poll.question = question;
@@ -49,11 +59,13 @@ poll.statics = {
                 });
         },
 
-        deletePoll: function (pollId, callback) {
+        deletePoll: function deletePoll(pollId, callback) {
                 this.findById(pollId).remove(callback);
         },
 
-        getPolls: function (options, callback) {
+        getPolls: function getPolls(options, callback) {
+                var _this = this;
+
                 return this.aggregate([{ $project: {
                                 owner: 1,
                                 createdAt: 1,
@@ -61,29 +73,28 @@ poll.statics = {
                                 question: 1,
                                 sum: { $sum: '$options.votes' }
                         }
-                }].concat(options), (err, polls) => {
+                }].concat(options), function (err, polls) {
                         if (err) return callback(err, null);
-                        this.populate(polls, { path: "owner", select: "username -_id" }, callback);
+                        _this.populate(polls, { path: "owner", select: "username -_id" }, callback);
                 });
         },
 
-        getAllPolls: function (callback) {
+        getAllPolls: function getAllPolls(callback) {
                 return this.getPolls([{ $sort: { 'createdAt': -1 } }], callback);
         },
 
-        getRecentPolls: function (callback) {
+        getRecentPolls: function getRecentPolls(callback) {
                 return this.getPolls([{ $sort: { 'createdAt': -1 } }, { $limit: 3 }], callback);
         },
 
-        getMostPopularPolls: function (callback) {
+        getMostPopularPolls: function getMostPopularPolls(callback) {
                 return this.getPolls([{ $sort: { 'sum': -1, 'createdAt': -1 } }, { $limit: 3 }], callback);
         },
 
-        vote: function (poll_id, optionId, callback) {
+        vote: function vote(poll_id, optionId, callback) {
                 this.updateOne({ _id: poll_id, 'options._id': optionId }, { $inc: { 'options.$.votes': 1 } }, callback);
         }
 
 };
 
-export const Poll = mongoose.model('Poll', poll);
-//# sourceMappingURL=poll.js.map
+var Poll = exports.Poll = mongoose.model('Poll', poll);

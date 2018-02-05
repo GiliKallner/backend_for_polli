@@ -1,94 +1,118 @@
-import express from 'express';
-import { isEmpty } from 'lodash';
+'use strict';
 
-import { Poll } from '../models/poll';
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
 
-let router = express.Router();
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
-const validateInput = ({ question, options }) => {
+var _express = require('express');
 
-    let errors = {};
+var _express2 = _interopRequireDefault(_express);
 
-    if (question && isEmpty(question)) errors.question = 'A question is requiered to start a poll';
+var _lodash = require('lodash');
+
+var _poll = require('../models/poll');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var router = _express2.default.Router();
+
+var validateInput = function validateInput(_ref) {
+    var question = _ref.question,
+        options = _ref.options;
+
+
+    var errors = {};
+
+    if (question && (0, _lodash.isEmpty)(question)) errors.question = 'A question is requiered to start a poll';
     if (options.length < 2) errors.options = 'Polls need at list two options to vote from.';
     if (question) question = question.match(/\?$|!$|\.$/g) ? question : question + '?';
 
     return {
-        errors,
-        isValid: isEmpty(errors),
-        question
+        errors: errors,
+        isValid: (0, _lodash.isEmpty)(errors),
+        question: question
     };
 };
 
 /*-------------------------------------------------------*/
 // delete a poll
 
-router.delete('/:pollId', (req, res) => {
-    const callback = err => {
+router.delete('/:pollId', function (req, res) {
+    var callback = function callback(err) {
         if (err) return res.status(500).json('Something went wrong');
         res.status(200).json(req.params.pollId);
     };
 
-    Poll.deletePoll(req.params.pollId, callback);
+    _poll.Poll.deletePoll(req.params.pollId, callback);
 });
 
 /*-------------------------------------------------------*/
 // retrive user's polls
 
-router.get('/:userId', (req, res) => {
-    const callback = (err, polls) => {
+router.get('/:userId', function (req, res) {
+    var callback = function callback(err, polls) {
         if (err) return res.status(404).json('There are no polls yet in your repository');
         return res.status(200).json(polls);
     };
 
-    Poll.getUsersPolls(req.params.userId, callback);
+    _poll.Poll.getUsersPolls(req.params.userId, callback);
 });
 
 /*-------------------------------------------------------*/
 // get a single poll by it's id
 
-router.get('/poll/:pollId', (req, res) => {
+router.get('/poll/:pollId', function (req, res) {
+    var pollId = req.params.pollId;
 
-    const { pollId } = req.params;
 
-    const callback = (err, poll) => {
+    var callback = function callback(err, poll) {
         if (err) return res.status(500).json('Something went wrong');
         return res.status(200).json(poll);
     };
 
-    Poll.getPollById(pollId, callback);
+    _poll.Poll.getPollById(pollId, callback);
 });
 
 /*-------------------------------------------------------*/
 // vote for a single option in a poll
-router.put('/vote', (req, res) => {
+router.put('/vote', function (req, res) {
+    var _req$body = req.body,
+        _id = _req$body._id,
+        opt_id = _req$body.opt_id;
 
-    const { _id, opt_id } = req.body;
 
-    const callback = (err, poll) => {
+    var callback = function callback(err, poll) {
         if (err) return res.status(500).json(err);
-        res.status(200).json({ _id, opt_id });
+        res.status(200).json({ _id: _id, opt_id: opt_id });
     };
 
-    Poll.vote(_id, opt_id, callback);
+    _poll.Poll.vote(_id, opt_id, callback);
 });
 
 /*-------------------------------------------------------*/
 // update a single poll
 
-router.put('/', (req, res) => {
-    let { errors, isValid, question } = validateInput(req.body);
+router.put('/', function (req, res) {
+    var _validateInput = validateInput(req.body),
+        errors = _validateInput.errors,
+        isValid = _validateInput.isValid,
+        question = _validateInput.question;
 
     if (!isValid) return res.status(401).json(errors);
 
-    let { options, poll_id } = req.body;
+    var _req$body2 = req.body,
+        options = _req$body2.options,
+        poll_id = _req$body2.poll_id;
 
-    options = options.map(opt => {
-        if (typeof opt === 'object') return { option: opt.option, votes: opt.votes };
+
+    options = options.map(function (opt) {
+        if ((typeof opt === 'undefined' ? 'undefined' : _typeof(opt)) === 'object') return { option: opt.option, votes: opt.votes };
         return { option: opt };
     });
 
-    const callback = (poll, err) => {
+    var callback = function callback(poll, err) {
         if (err) {
             console.log('update-error: ', err);
             return res.status(500).json(errors);
@@ -97,52 +121,58 @@ router.put('/', (req, res) => {
         res.status(200).json(poll);
     };
 
-    Poll.updatePoll({ question, options }, poll_id, callback);
+    _poll.Poll.updatePoll({ question: question, options: options }, poll_id, callback);
 });
 
 /*-------------------------------------------------------*/
 // save a new poll
 
-router.post('/', (req, res) => {
-    const { errors, isValid, question } = validateInput(req.body);
+router.post('/', function (req, res) {
+    var _validateInput2 = validateInput(req.body),
+        errors = _validateInput2.errors,
+        isValid = _validateInput2.isValid,
+        question = _validateInput2.question;
+
     if (!isValid) return res.status(401).json(errors);
 
-    let { options, user_id } = req.body;
+    var _req$body3 = req.body,
+        options = _req$body3.options,
+        user_id = _req$body3.user_id;
 
-    options = options.map(opt => {
+
+    options = options.map(function (opt) {
         return { option: opt };
     });
 
-    const callback = (err, poll) => {
+    var callback = function callback(err, poll) {
         if (err) return res.status(401).json('User is not logged in');
         res.status(200).json(poll);
     };
 
-    Poll.saveNewPoll({ question, options, user_id }, callback);
+    _poll.Poll.saveNewPoll({ question: question, options: options, user_id: user_id }, callback);
 });
 
 /*-------------------------------------------------------*/
 // home page - view all polls filtered by a given category
 
-router.get('/', (req, res) => {
-    const callback = (err, polls) => {
+router.get('/', function (req, res) {
+    var callback = function callback(err, polls) {
         if (err) {
             console.log('err: ', err);return res.status(500).json('Something went wrong');
         };
-        polls = polls.map(poll => {
+        polls = polls.map(function (poll) {
             poll.owner = poll.owner.username;
             return poll;
         });
         res.status(200).json(polls);
     };
 
-    const type = { 'all': 'getAllPolls',
+    var type = { 'all': 'getAllPolls',
         'most-recent': 'getRecentPolls',
         'most-popular': 'getMostPopularPolls'
     }[req.query.type];
 
-    Poll[type](callback);
+    _poll.Poll[type](callback);
 });
 
-export default router;
-//# sourceMappingURL=polls.js.map
+exports.default = router;

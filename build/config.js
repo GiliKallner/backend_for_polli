@@ -1,8 +1,13 @@
+'use strict';
 
-import crypto from 'crypto';
+var _crypto = require('crypto');
 
-const password = crypto.randomBytes(32),
-      secret = crypto.randomBytes(32);
+var _crypto2 = _interopRequireDefault(_crypto);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var password = _crypto2.default.randomBytes(32),
+    secret = _crypto2.default.randomBytes(32);
 
 module.exports = {
     server: {
@@ -26,4 +31,3 @@ module.exports = {
     jwtSecret: secret,
     SESSION_SECRET: secret
 };
-//# sourceMappingURL=config.js.map

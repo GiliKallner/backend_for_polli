@@ -1,27 +1,39 @@
-const express = require('express');
-const app = express();
-const path = require('path');
-const bodyParser = require('body-parser');
+'use strict';
 
-const session = require('express-session'),
-      connectRedis = require('connect-redis');
+var _users = require('./routes/users');
 
-const RedisStore = connectRedis(session);
+var _users2 = _interopRequireDefault(_users);
 
-const mongoose = require('mongoose');
-const dbUrl = require('./config').database.url;
+var _auth = require('./routes/auth');
+
+var _auth2 = _interopRequireDefault(_auth);
+
+var _polls = require('./routes/polls');
+
+var _polls2 = _interopRequireDefault(_polls);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var express = require('express');
+var app = express();
+var path = require('path');
+var bodyParser = require('body-parser');
+
+var session = require('express-session'),
+    connectRedis = require('connect-redis');
+
+var RedisStore = connectRedis(session);
+
+var mongoose = require('mongoose');
+var dbUrl = require('./config').database.url;
 mongoose.connect(dbUrl, { useMongoClient: true });
 
 mongoose.Promise = global.Promise;
 
-import users from './routes/users';
-import auth from './routes/auth';
-import polls from './routes/polls';
-
-const db = mongoose.connection;
+var db = mongoose.connection;
 
 db.on('error', console.error.bind(console, 'connection error:'));
-db.once('open', () => {
+db.once('open', function () {
   // User.find().remove(function(){console.log("removed")});
 
   app.use(bodyParser.json());
@@ -36,11 +48,11 @@ db.once('open', () => {
                      secret: require('./config').SESSION_SECRET
                    }));
    */
-  app.use('/api/users', users);
-  app.use('/api/auth', auth);
-  app.use('/api/polls', polls);
+  app.use('/api/users', _users2.default);
+  app.use('/api/auth', _auth2.default);
+  app.use('/api/polls', _polls2.default);
 
-  app.use((req, res) => {
+  app.use(function (req, res) {
     res.status(404).json({
       errors: {
         global: 'Still working on it. Please try again later.'
@@ -48,10 +60,11 @@ db.once('open', () => {
     });
   });
 
-  app.listen(8081, () => console.log("app listening at cloud9 8081"));
+  app.listen(8081, function () {
+    return console.log("app listening at cloud9 8081");
+  });
 });
 
 /*
     "start": "nodemon --watch src --exec babel-node -- src/index.js"
 */
-//# sourceMappingURL=index.js.map

@@ -1,32 +1,51 @@
-import express from 'express';
-import config from '../config';
-import jwt from 'jsonwebtoken';
+'use strict';
 
-import { User } from '../models/user';
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
 
-let router = express.Router();
+var _express = require('express');
 
-router.post('/', (req, res) => {
+var _express2 = _interopRequireDefault(_express);
 
-    const { identifier, password } = req.body;
+var _config = require('../config');
 
-    User.findUser(identifier, identifier).then(users => {
+var _config2 = _interopRequireDefault(_config);
+
+var _jsonwebtoken = require('jsonwebtoken');
+
+var _jsonwebtoken2 = _interopRequireDefault(_jsonwebtoken);
+
+var _user = require('../models/user');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var router = _express2.default.Router();
+
+router.post('/', function (req, res) {
+    var _req$body = req.body,
+        identifier = _req$body.identifier,
+        password = _req$body.password;
+
+
+    _user.User.findUser(identifier, identifier).then(function (users) {
         if (!users.length) return res.status(401).json({ errors: { form: 'Invalid Credentials' } });
 
-        const user = users[0];
-        user.comparePasswords(password, match => {
+        var user = users[0];
+        user.comparePasswords(password, function (match) {
 
             if (!match) return res.status(401).json({ errors: 'Invalid Credentials' });
 
-            const token = jwt.sign({
+            var token = _jsonwebtoken2.default.sign({
                 id: user._id,
                 username: user.username
-            }, config.jwtSecret);
+            }, _config2.default.jwtSecret);
 
             res.json(token);
-        }, err => res.status(500).json({ errors: 'internal problem with saving the user: ', err }));
+        }, function (err) {
+            return res.status(500).json({ errors: 'internal problem with saving the user: ', err: err });
+        });
     });
 });
 
-export default router;
-//# sourceMappingURL=auth.js.map
+exports.default = router;

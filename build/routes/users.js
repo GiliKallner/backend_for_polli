@@ -1,92 +1,127 @@
-import express from 'express';
-import { isEmpty } from 'lodash';
-import Validator from 'validator';
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _express = require('express');
+
+var _express2 = _interopRequireDefault(_express);
+
+var _lodash = require('lodash');
+
+var _validator = require('validator');
+
+var _validator2 = _interopRequireDefault(_validator);
+
+var _crypto = require('crypto');
+
+var _crypto2 = _interopRequireDefault(_crypto);
+
+var _utils = require('../utils');
+
+var _config = require('../config');
+
+var _config2 = _interopRequireDefault(_config);
+
+var _jsonwebtoken = require('jsonwebtoken');
+
+var _jsonwebtoken2 = _interopRequireDefault(_jsonwebtoken);
+
+var _user = require('../models/user');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 //import { sendVerificationEmail } from '../mail';
-const argon2 = require('argon2');
+var argon2 = require('argon2');
 
-import crypto from 'crypto';
-import { saveNewUser } from '../utils';
-import config from '../config';
-import jwt from 'jsonwebtoken';
+var router = _express2.default.Router();
 
-let router = express.Router();
-
-import { User } from '../models/user';
 //User.find().remove(function(){console.log("removed")});
 
 
 function otherValidations(data) {
 
-    let errors = {};
+    var errors = {};
 
-    Object.keys(data).forEach(item => {
-        if (isEmpty(data[item])) {
+    Object.keys(data).forEach(function (item) {
+        if ((0, _lodash.isEmpty)(data[item])) {
             errors[item] = "This field is required";
         }
     });
 
-    if (!Validator.isEmail(data.email)) {
+    if (!_validator2.default.isEmail(data.email)) {
         errors.email = 'Invalid Email address';
     }
 
-    if (!Validator.equals(data.password, data.psConfirm)) {
+    if (!_validator2.default.equals(data.password, data.psConfirm)) {
         errors.psConfirm = 'Passwords must match';
     }
 
     return {
-        errors,
-        isValid: isEmpty(errors)
+        errors: errors,
+        isValid: (0, _lodash.isEmpty)(errors)
     };
 }
 
 function validateInput(data, otherValidations) {
+    var _otherValidations = otherValidations(data),
+        errors = _otherValidations.errors;
 
-    let { errors } = otherValidations(data);
-    const { username, email } = data;
+    var username = data.username,
+        email = data.email;
 
-    return User.findUser(username, email).then(users => {
-        let user = users[0];
+
+    return _user.User.findUser(username, email).then(function (users) {
+        var user = users[0];
         if (user) {
             if (user.name === username) errors.username = "This username already exists.";
             if (user.email === email) errors.email = "This email already exists.";
         }
-    }).then(() => {
-        return { errors,
-            isValid: isEmpty(errors)
+    }).then(function () {
+        return { errors: errors,
+            isValid: (0, _lodash.isEmpty)(errors)
         };
-    }).catch(err => {
+    }).catch(function (err) {
         console.error(err);
         console.log('no user was found in our data base.');
     });
 }
 
-router.get('/:identifier', (req, res) => {
-    const { identifier } = req.params;
-    User.findUser(identifier, identifier).then(users => res.json(users[0]), err => res.status(401).json('no user found: ', err));
+router.get('/:identifier', function (req, res) {
+    var identifier = req.params.identifier;
+
+    _user.User.findUser(identifier, identifier).then(function (users) {
+        return res.json(users[0]);
+    }, function (err) {
+        return res.status(401).json('no user found: ', err);
+    });
 });
 
-router.get('/', () => {
+router.get('/', function () {
     console.log('kjhkjhkh');
 });
-router.post('/', (req, res) => {
-    validateInput(req.body, otherValidations).then(({ errors, isValid }) => {
+router.post('/', function (req, res) {
+    validateInput(req.body, otherValidations).then(function (_ref) {
+        var errors = _ref.errors,
+            isValid = _ref.isValid;
+
 
         if (isValid) {
-            User.saveNewUser(req.body, (err, user) => {
+            _user.User.saveNewUser(req.body, function (err, user) {
 
                 if (err) {
-                    let error = new Error();
+                    var error = new Error();
                     error.statusCode = err.statusCode;
                     return res.status(error.statusCode).json(error);
                 }
 
-                const token = jwt.sign({
+                var token = _jsonwebtoken2.default.sign({
                     id: user._id,
                     username: user.username
-                }, config.jwtSecret);
+                }, _config2.default.jwtSecret);
                 res.json(token);
-            }, err => {
+            }, function (err) {
                 res.status(401).json('invalid credentials');
             });
         } else {
@@ -95,5 +130,4 @@ router.post('/', (req, res) => {
     });
 });
 
-export default router;
-//# sourceMappingURL=users.js.map
+exports.default = router;

@@ -1,21 +1,44 @@
+'use strict';
 
-import jose from 'node-jose';
-import argon2 from 'argon2';
-import toPem from 'jwk-to-pem';
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.saveUser = exports.saveNewUser = exports.signJwt = undefined;
+
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
 //import { salt } from './config'
-import { User } from './models/user';
 
-const keystore = jose.JWK.createKeyStore();
 
-const promises = [keystore.generate('EC', 'P-256', { kid: '1' }), keystore.generate('RSA', 2048, { kid: '2' })];
+var _nodeJose = require('node-jose');
+
+var _nodeJose2 = _interopRequireDefault(_nodeJose);
+
+var _argon = require('argon2');
+
+var _argon2 = _interopRequireDefault(_argon);
+
+var _jwkToPem = require('jwk-to-pem');
+
+var _jwkToPem2 = _interopRequireDefault(_jwkToPem);
+
+var _user = require('./models/user');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var keystore = _nodeJose2.default.JWK.createKeyStore();
+
+var promises = [keystore.generate('EC', 'P-256', { kid: '1' }), keystore.generate('RSA', 2048, { kid: '2' })];
 
 /* ********************************************************************************** */
 
-export const signJwt = ({ username, _id }) => {
-    const signingKey = keystore.get('1');
+var signJwt = exports.signJwt = function signJwt(_ref) {
+    var username = _ref.username,
+        _id = _ref._id;
 
-    const opts = {
+    var signingKey = keystore.get('1');
+
+    var opts = {
         algorithm: 'ES256',
         exp: Date.now() + 1000,
         handlers: {
@@ -23,7 +46,7 @@ export const signJwt = ({ username, _id }) => {
         }
     };
 
-    const payload = {
+    var payload = {
         username: username,
         id: _id,
         admin: true,
@@ -31,27 +54,29 @@ export const signJwt = ({ username, _id }) => {
         alg: 'A128GCM'
     };
 
-    return new Promise(res => {
-        jose.JWS.createSign(opts, signingKey).update(JSON.stringify(payload)).final().then(x => res(x));
+    return new Promise(function (res) {
+        _nodeJose2.default.JWS.createSign(opts, signingKey).update(JSON.stringify(payload)).final().then(function (x) {
+            return res(x);
+        });
     });
 };
 
 /* ********************************************************************************** */
 
-const signAndEncryptJwt = user => {
+var signAndEncryptJwt = function signAndEncryptJwt(user) {
 
-    const encryptionKey = keystore.get('2');
-    const ecryptionOptions = {
+    var encryptionKey = keystore.get('2');
+    var ecryptionOptions = {
         format: 'compact',
         contentAlg: 'A128CBC-HS256'
     };
 
-    const promise = new Promise((resolve, reject) => {
+    var promise = new Promise(function (resolve, reject) {
 
-        signJwt(user).then(signedJwt => {
-            const encrypt = jose.JWE.createEncrypt(ecryptionOptions, encryptionKey).update(JSON.stringify(signedJwt)).final();
+        signJwt(user).then(function (signedJwt) {
+            var encrypt = _nodeJose2.default.JWE.createEncrypt(ecryptionOptions, encryptionKey).update(JSON.stringify(signedJwt)).final();
             resolve(encrypt);
-        }, err => {
+        }, function (err) {
             console.error('Signing error: ', err);reject(err);
         });
     });
@@ -61,22 +86,24 @@ const signAndEncryptJwt = user => {
 
 /* ********************************************************************************** */
 
-export const saveNewUser = user => {
+var saveNewUser = exports.saveNewUser = function saveNewUser(user) {
+    var username = user.username,
+        email = user.email,
+        password = user.password;
 
-    const { username, email, password } = user;
 
-    const promise = new Promise((res, rej) => {
+    var promise = new Promise(function (res, rej) {
 
-        const create_password = argon2.hash(password);
-        create_password.then(pass => {
+        var create_password = _argon2.default.hash(password);
+        create_password.then(function (pass) {
 
-            let user = {
+            var user = {
                 'username': username,
                 'email': email,
                 'password': pass
             };
 
-            new User(user).save((err, user) => {
+            new _user.User(user).save(function (err, user) {
                 if (err) return rej(err);
                 res(user);
             });
@@ -87,17 +114,17 @@ export const saveNewUser = user => {
 
 /* ********************************************************************************** */
 
-const generateKeys = () => {
-    const keys = {
+var generateKeys = function generateKeys() {
+    var keys = {
         signingKey: keystore.get('1'),
         encryptionKey: keystore.get('2')
     };
 
-    let keysInPem = {};
-    Object.keys(keys).forEach(key => {
+    var keysInPem = {};
+    Object.keys(keys).forEach(function (key) {
         keysInPem[key] = {
-            publicKey: toPem(keys[key].toJSON()),
-            privateKey: toPem(keys[key].toJSON(true), { 'private': true })
+            publicKey: (0, _jwkToPem2.default)(keys[key].toJSON()),
+            privateKey: (0, _jwkToPem2.default)(keys[key].toJSON(true), { 'private': true })
         };
     });
 
@@ -109,22 +136,29 @@ const generateKeys = () => {
 
 /* ********************************************************************************** */
 
-export const saveUser = (user, update) => {
+var saveUser = exports.saveUser = function saveUser(user, update) {
 
-    const promise = new Promise((resolve, reject) => {
+    var promise = new Promise(function (resolve, reject) {
 
-        Promise.all(promises).then(() => {
-            const { clientKeys, dbKeys } = generateKeys();
-            saveNewUser(user, dbKeys, update).then(user => signAndEncryptJwt(user)).then(finalJose => resolve({
-                keys: clientKeys,
-                token: finalJose
-            }), error => {
+        Promise.all(promises).then(function () {
+            var _generateKeys = generateKeys(),
+                clientKeys = _generateKeys.clientKeys,
+                dbKeys = _generateKeys.dbKeys;
+
+            saveNewUser(user, dbKeys, update).then(function (user) {
+                return signAndEncryptJwt(user);
+            }).then(function (finalJose) {
+                return resolve({
+                    keys: clientKeys,
+                    token: finalJose
+                });
+            }, function (error) {
                 console.error('error ocured during signing/encrition process: ', error);reject(error);
             });
-        }, error => {
+        }, function (error) {
             console.error('error ocured during creating keys: ', error);reject(error);
         });
-    }).catch(error => {
+    }).catch(function (error) {
         console.error('error ocured during creating keys or other: ', error);
     });
 
@@ -133,19 +167,24 @@ export const saveUser = (user, update) => {
 
 /* ********************************************************************************** */
 
-const decrepteAndValidate = (jwt, [public_siginig_key, encrypt_private_key]) => {
+var decrepteAndValidate = function decrepteAndValidate(jwt, _ref2) {
+    var _ref3 = _slicedToArray(_ref2, 2),
+        public_siginig_key = _ref3[0],
+        encrypt_private_key = _ref3[1];
 
-    const promise = new Promise((resolve, reject) => {
+    var promise = new Promise(function (resolve, reject) {
 
-        const decrypt_jwt = jose.JWE.createDecrypt(encrypt_private_key).decrypt(jwt);
+        var decrypt_jwt = _nodeJose2.default.JWE.createDecrypt(encrypt_private_key).decrypt(jwt);
 
-        decrypt_jwt.then(decrypted => {
+        decrypt_jwt.then(function (decrypted) {
 
-            let unVerified = JSON.parse(decrypted.payload);
+            var unVerified = JSON.parse(decrypted.payload);
 
-            jose.JWS.createVerify(public_siginig_key).verify(unVerified).then(result => {
+            _nodeJose2.default.JWS.createVerify(public_siginig_key).verify(unVerified).then(function (result) {
                 resolve(JSON.parse(result.payload));
-            }, err => reject(err));
+            }, function (err) {
+                return reject(err);
+            });
         });
     });
 
@@ -154,13 +193,20 @@ const decrepteAndValidate = (jwt, [public_siginig_key, encrypt_private_key]) => 
 
 /* ********************************************************************************** */
 
-const validateTokens = (keys, token) => {
-    const [encryptionKey, signingKey] = keys;
+var validateTokens = function validateTokens(keys, token) {
+    var _keys = _slicedToArray(keys, 2),
+        encryptionKey = _keys[0],
+        signingKey = _keys[1];
 
-    const promises = [jose.JWK.asKey(signingKey, "pem"), jose.JWK.asKey(encryptionKey, "pem")];
+    var promises = [_nodeJose2.default.JWK.asKey(signingKey, "pem"), _nodeJose2.default.JWK.asKey(encryptionKey, "pem")];
 
-    Promise.all(promises).then(keys => {
-        decrepteAndValidate(token, keys).then(result => console.log('result: ', result)).catch(err => console.error('result parsing error: ', err));
-    }, err => console.error('error in creating keys from credentials: ', err));
+    Promise.all(promises).then(function (keys) {
+        decrepteAndValidate(token, keys).then(function (result) {
+            return console.log('result: ', result);
+        }).catch(function (err) {
+            return console.error('result parsing error: ', err);
+        });
+    }, function (err) {
+        return console.error('error in creating keys from credentials: ', err);
+    });
 };
-//# sourceMappingURL=utils.js.map

@@ -1,2 +1,1 @@
-
-//# sourceMappingURL=mail.js.map
+"use strict";
