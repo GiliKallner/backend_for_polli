@@ -34,7 +34,7 @@
   },
   "scripts": {
     "clean": "rm -rf build && mkdir build",
-    "build-server": "babel src -d build -s",
+    "build-server": "babel src -d build",
     "build": "yarn clean && yarn build-server",
     "start":"node build/index.js"
   }
