@@ -47,12 +47,13 @@ function validateInput( data, otherValidations ) {
     const { username, email } = data;
     
     return User.findUser( username, email )
-            .then(users => {
-                   let user = users[0];
-                   if(user){
-                        if(user.name === username) errors.username = "This username already exists.";
-                        if(user.email === email) errors.email = "This email already exists.";
-                   }
+            .then( users => {
+                    const user = users[0],
+                    message = o => `There is already a member with that ${o}.`;
+                    if(user){
+                        if (user.name === username) errors.username = message('username');
+                        if (user.email === email) errors.email = message('email address');
+                    }
                 }).then(()=>{
                     return { errors,
                              isValid: isEmpty(errors)
@@ -60,43 +61,49 @@ function validateInput( data, otherValidations ) {
                 }).catch(err=>{
                     console.error(err);
                     console.log('no user was found in our data base.');
-                });
+            });
 
 }
 
-router.get('/:identifier',(req,res) => {
-    const { identifier } = req.params;
-    User.findUser( identifier, identifier )
-    .then( users => res.json(users[0]), 
-           err => res.status(401).json('no user found: ',err)
-        );
+router.get('/',(req,res) => {
+    const name  = Object.keys(req.query), identifier = req.query[name];
+    let response = {};
+    User.findUserByIdentifier( name, identifier )
+    .then(  users => {
+            if(users[0]) { 
+                    response[ name ] = `There is already a member with that ${name}.`;
+                    return res.json( response );
+            }
+            response[name] = '';
+            res.json( response );
+        }, 
+        err => console.log('err: ',err)
+    );
 });
 
-router.get('/',()=>{
-    console.log('kjhkjhkh');
-});
 router.post('/',(req,res) => {
-    validateInput(req.body,otherValidations).then(({ errors, isValid }) => {
+    validateInput(req.body,otherValidations)
+        .then(({ errors, isValid }) => {
 
-         if(isValid) {
-            User.saveNewUser(req.body, ( err,user ) => {
+            if(isValid) {
+                User.saveNewUser( req.body, 
+                    ( err,user ) => {
                 
-                if(err) { 
-                    let error = new Error();
-                    error.statusCode = err.statusCode;
-                    return res.status(error.statusCode).json(error);}
-                
-                const token = jwt.sign({
-                                    id: user._id,
-                                    username: user.username
-                                    },config.jwtSecret);
-                res.json(token);
-                }, err=>{ res.status(401).json('invalid credentials'); }
-            )
-         }
-         else{
-             res.status(400).json(errors);
-         }
+                        if(err) { 
+                            let error = new Error();
+                            error.statusCode = err.statusCode;
+                            return res.status(error.statusCode).json(error);
+                        }
+                        const token = jwt.sign({
+                                        id: user._id,
+                                        username: user.username
+                                        },config.jwtSecret);
+                        res.json(token);
+                    }, 
+                    err=> res.status(500).json('Data base error: ',err) 
+                );
+            }
+            else res.status(401).json(errors);
     });
     
 });

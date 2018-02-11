@@ -73,7 +73,7 @@ router.put('/vote', (req,res) => {
 
     const callback = ( err, poll ) => {
         if (err) return res.status(500).json(err);
-        res.status(200).json({_id, opt_id});
+        res.status(200).json({ _id, opt_id });
     };
 
     Poll.vote( _id, opt_id, callback );

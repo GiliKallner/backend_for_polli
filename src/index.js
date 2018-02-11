@@ -48,14 +48,9 @@ db.once('open', () => {
           errors:{
             global:'Still working on it. Please try again later.'
           }
-        })
+        });
     });
   
-
-app.listen(process.env.PORT ||8081, () => console.log("app listening at cloud9 8081") );
+app.listen(8081, () => console.log("app listening at cloud9 8081") );
 
 });
-
-/*
-    "start": "nodemon --watch src --exec babel-node -- src/index.js"
-*/
