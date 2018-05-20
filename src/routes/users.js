@@ -47,9 +47,8 @@ function validateInput( data, otherValidations ) {
     const { username, email } = data;
     
     return User.findUser( username, email )
-            .then( users => {
-                    const user = users[0],
-                    message = o => `There is already a member with that ${o}.`;
+            .then( user => {
+                    const message = o => `There is already a member with that ${o}.`;
                     if(user){
                         if (user.name === username) errors.username = message('username');
                         if (user.email === email) errors.email = message('email address');
@@ -59,8 +58,7 @@ function validateInput( data, otherValidations ) {
                              isValid: isEmpty(errors)
                             };
                 }).catch(err=>{
-                    console.error(err);
-                    console.log('no user was found in our data base.');
+                    console.error('no user was found in our data base: ',err);
             });
 
 }
@@ -69,8 +67,8 @@ router.get('/',(req,res) => {
     const name  = Object.keys(req.query), identifier = req.query[name];
     let response = {};
     User.findUserByIdentifier( name, identifier )
-    .then(  users => {
-            if(users[0]) { 
+    .then(  user => {
+            if(user) { 
                     response[ name ] = `There is already a member with that ${name}.`;
                     return res.json( response );
             }

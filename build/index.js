@@ -60,7 +60,7 @@ db.once('open', function () {
     });
   });
 
-  app.listen(process.env.PORT || 8081, function () {
+  app.listen(8081, function () {
     return console.log("app listening at cloud9 8081");
   });
 });

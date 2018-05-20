@@ -5,7 +5,6 @@ import { Poll } from '../models/poll';
 
 let router = express.Router();
 
-
 const validateInput = ({ question, options }) => {
    
     let errors = {};
@@ -20,8 +19,6 @@ const validateInput = ({ question, options }) => {
       question
     };
 };
-
-
 
 /*-------------------------------------------------------*/
 // delete a poll
@@ -42,9 +39,9 @@ router.delete('/:pollId', (req,res) => {
 router.get('/:userId', (req,res) => {
     const callback = ( err, polls ) => { 
         if(err) return res.status(404).json('There are no polls yet in your repository');
+        console.log('polls: ',polls)
         return res.status(200).json(polls);
     };
-    
     Poll.getUsersPolls( req.params.userId, callback );
 });
                 
@@ -67,6 +64,7 @@ router.get('/poll/:pollId', (req,res) => {
 
 /*-------------------------------------------------------*/
 // vote for a single option in a poll
+
 router.put('/vote', (req,res) => {
    
     const { _id, opt_id } = req.body;
@@ -113,19 +111,19 @@ router.put('/', (req,res) => {
 // save a new poll
 
 router.post('/',(req,res) => {
-    const {errors, isValid, question } = validateInput(req.body);
+    const { errors, isValid, question } = validateInput(req.body);
     if( !isValid ) return res.status(401).json(errors);
     
-    let { options, user_id } = req.body;
+    let { options, user } = req.body;
    
-        options = options.map(opt => {return { option:opt }});
+        options = options.map(opt => { return { option:opt } });
         
         const callback = (err, poll) => {
             if (err) return res.status(401).json('User is not logged in'); 
             res.status(200).json(poll) ;
         };
         
-        Poll.saveNewPoll({ question, options, user_id }, callback );
+        Poll.saveNewPoll({ question, options, user }, callback );
 
 });
 
@@ -136,7 +134,7 @@ router.get('/',(req, res) => {
     const callback = ( err, polls ) => {
             if (err) {console.log('err: ',err); return res.status(500).json('Something went wrong')}; 
             polls = polls.map( poll => {
-                poll.owner = poll.owner.username;
+                poll.owner = poll.owner.name;
                 return poll;
             });
             res.status(200).json(polls) ;

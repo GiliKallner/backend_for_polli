@@ -48,12 +48,12 @@ user.plugin(uniqueValidator);
 user.statics = {
         
         findUser : function ( name, email ) {
-                return this.find({ $or:[ {'username':name }, {'email':email } ]});
+                return this.findOne({ $or:[ {'username':name }, {'email':email } ]});
         },
         findUserByIdentifier : function(identifer, value ) {
                 let query = {}; 
                 query [identifer] = { '$eq': value };
-                return this.find( query );
+                return this.findOne( query );
         },
         saveNewUser: function ( user, callback ) {
                 const { username, email, password } = user;
